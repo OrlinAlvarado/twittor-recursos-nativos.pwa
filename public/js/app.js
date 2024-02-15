@@ -76,11 +76,15 @@ var foto = null;
 // El usuario, contiene el ID del héroe seleccionado
 var usuario;
 
+// Init de la camera class
+// document.getElementbyId('player');
+const camara = new Camera( $('#player')[0] );
+
 
 
 // ===== Codigo de la aplicación
 
-function crearMensajeHTML(mensaje, personaje, lat, lng, foto) {
+function crearMensajeHTML(mensaje, personaje, lat, lng) {
 
     // console.log(mensaje, personaje, lat, lng);
 
@@ -99,12 +103,12 @@ function crearMensajeHTML(mensaje, personaje, lat, lng, foto) {
                 ${ mensaje }
                 `;
     
-    if ( foto ) {
-        content += `
-                <br>
-                <img class="foto-mensaje" src="${ foto }">
-        `;
-    }
+    // if ( foto ) {
+    //     content += `
+    //             <br>
+    //             <img class="foto-mensaje" src="${ foto }">
+    //     `;
+    // }
         
     content += `</div>        
                 <div class="arrow"></div>
@@ -245,7 +249,6 @@ postBtn.on('click', function() {
         user: usuario,
         lat: lat,
         lng: lng,
-        foto: foto
     };
 
 
@@ -260,10 +263,7 @@ postBtn.on('click', function() {
     .then( res => console.log( 'app.js', res ))
     .catch( err => console.log( 'app.js error:', err ));
 
-    camera.apagar();
-    contenedorCamara.addClass('oculto');
-
-    crearMensajeHTML( mensaje, usuario, lat, lng, foto );
+    crearMensajeHTML( mensaje, usuario, lat, lng );
     
     foto = null;
 });
@@ -481,7 +481,19 @@ function mostrarMapaModal(lat, lng) {
 // Obtener la geolocalización
 btnLocation.on('click', () => {
 
-    console.log('Botón geolocalización');
+    $.mdtoast('Cargando mapa...', {
+        interaction: true,
+        interactionTimeout: 2000,
+        actionText: 'OK!'
+    })
+
+    // console.log('Botón geolocalización');
+
+    navigator.geolocation.getCurrentPosition( pos => {
+        mostrarMapaModal(pos.coords.latitude, pos.coords.longitude);
+        lat = pos.coords.latitude;
+        lng = pos.coords.longitude;
+    })
     
 
 });
@@ -494,6 +506,9 @@ btnLocation.on('click', () => {
 btnPhoto.on('click', () => {
 
     console.log('Inicializar camara');
+    contenedorCamara.removeClass('oculto');
+
+    camara.turnOn();
 
 });
 
