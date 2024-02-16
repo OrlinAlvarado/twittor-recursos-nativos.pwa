@@ -84,12 +84,14 @@ const camara = new Camera( $('#player')[0] );
 
 // ===== Codigo de la aplicación
 
-function crearMensajeHTML(mensaje, personaje, lat, lng) {
+function crearMensajeHTML(mensaje, personaje, lat, lng, foto) {
 
     // console.log(mensaje, personaje, lat, lng);
 
     var content =`
     <li class="animated fadeIn fast"
+        data-user="${ personaje }"
+        data-mensaje="${ mensaje }"
         data-tipo="mensaje">
 
 
@@ -103,12 +105,12 @@ function crearMensajeHTML(mensaje, personaje, lat, lng) {
                 ${ mensaje }
                 `;
     
-    // if ( foto ) {
-    //     content += `
-    //             <br>
-    //             <img class="foto-mensaje" src="${ foto }">
-    //     `;
-    // }
+    if ( foto ) {
+        content += `
+                <br>
+                <img class="foto-mensaje" src="${ foto }">
+        `;
+    }
         
     content += `</div>        
                 <div class="arrow"></div>
@@ -249,6 +251,7 @@ postBtn.on('click', function() {
         user: usuario,
         lat: lat,
         lng: lng,
+        foto: foto,
     };
 
 
@@ -263,7 +266,7 @@ postBtn.on('click', function() {
     .then( res => console.log( 'app.js', res ))
     .catch( err => console.log( 'app.js error:', err ));
 
-    crearMensajeHTML( mensaje, usuario, lat, lng );
+    crearMensajeHTML( mensaje, usuario, lat, lng, foto );
     
     foto = null;
 });
@@ -517,11 +520,45 @@ btnPhoto.on('click', () => {
 btnTomarFoto.on('click', () => {
 
     console.log('Botón tomar foto');
-    
+
+    foto = camara.takePhoto();
+    camara.turnOff();
+
 });
 
 
 // Share API
 
+// if (navigator.share) {
+//     console.log('Navegador lo soporta');
+// } else {
+//     console.log('Navegador no lo soporta');
+// }
 
+timeline.on('click', 'li', function(){
+    console.log('Click en LI')
+
+    let tipo = $(this).data('tipo');
+    let lat = $(this).data('lat');
+    let lng = $(this).data('lng');
+    let mensaje = $(this).data('mensaje');
+    let user = $(this).data('user');
+
+    const shareOpts = {
+        title: user,
+        text: mensaje,
+    }
+
+    console.log({ tipo, lat, lng, mensaje, user })
+
+    if (tipo === 'mapa') {
+        shareOpts.text = 'Mapa';
+        shareOpts.url = `https://www.google.com/maps/@${lat},${lng},15z`
+    }
+
+    navigator.share(shareOpts)
+        .then(() => console.log('Successful share'))
+        .catch((error) => console.log('Error sharing', error));
+    
+})
 
